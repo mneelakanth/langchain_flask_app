@@ -1,5 +1,6 @@
+from flask import Flask, jsonify, request, render_template
 import os
-from flask import Flask, render_template, request, jsonify
+import argparse
 
 from utils import split_text, process_file, create_embeddings, create_pipeline, create_vector_db
 
@@ -16,13 +17,20 @@ def allowed_file(filename):
     """Check if the file has allowed extensions."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-embeddings = create_embeddings()
+def arg_parse():
+    parser = argparse.ArgumentParser(description="Run the Flask web app")
+    parser.add_argument('--modelname', type=str, default='huggingface', help="Model name for llm.")
+    return parser.parse_args()
+args = arg_parse()
+
+embeddings = create_embeddings(args.modelname)
 db = None
-qa_pipeline = create_pipeline()
+llm = create_pipeline(args.modelname)
 
 def process_data(content):
     docs = split_text(content)
     db = create_vector_db(docs, embeddings)
+    return db
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -36,7 +44,7 @@ def index():
             # Process the uploaded file
             file_type = filepath.split('.')[-1]
             content = process_file(filepath, file_type)
-            process_data(content)
+            
             return render_template('index.html', content=content, filename=filename)
         else:
             return 'Invalid file type. Only .txt and .csv files are allowed.', 400
@@ -46,22 +54,34 @@ def index():
 def remove_content():
     content = None
     return render_template('index.html', content=None)
-    
 
 @app.route('/ask_question', methods=['POST'])
 def ask_question():
     """Handle questions based on the file content."""
     question = request.form['question']
     content = request.form['content']
-    
-    result = qa_pipeline(question=question, context=content)
+    if args.modelname == 'huggingface':
+        result = llm(question=question, context=content)
 
-    result = result['answer']
-    return jsonify({"answer": result})
+        result = result['answer']
+        return jsonify({"answer": result})
 
-if __name__ == '__main__':
-    ## Create upload folder if not exists
+    if args.modelname == 'genai':
+        db = process_data(content)
+        relevant_docs = db.similarity_search(question, k=3)
+        context = " ".join([doc.page_content for doc in relevant_docs])
+
+        prompt = f"Question: {question}\nContext: {context}\nAnswer:"
+
+        messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt},
+            ]
+        answer = llm.invoke(messages)
+        answer = answer.content
+        return jsonify({'answer': answer})
+
+if __name__ == "__main__":
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
-    
     app.run(debug=True)
