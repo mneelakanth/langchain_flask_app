@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block upload %}
+<div class="">
+
+    {% if not content %}
+    <h2>Upload a File and Ask Questions</h2>
+    <form action="/" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" class="form-control" required>
+        <button type="submit" class="btn btn-outline-secondary">Upload File</button>
+        <div id="loading" style="display: none;">Loading...</div>
+    </form>
+    {% endif %}
+    {% if content %}
+        <h4>Remove present file </h4>
+        <form action="/remove" method="GET" enctype="multipart/form-data">
+            <button type="submit" class="btn btn-outline-secondary">Change File</button>
+        </form>
+
+        <!-- <div class="content">
+            <h3>File Content:</h3>
+            <pre>{{ content }}</pre>
+        </div> -->
+
+        <div class="accordion" id="accordionExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  File Content
+                </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                    <div class="accordion-body content">
+                        <pre>{{ content}} </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Ask a Question about the File:</h3>
+        <form id="question-form">
+            <input type="text" name="question" placeholder="Ask a question..." required>
+            <input type="hidden" name="content" value="{{ content }}">
+            <button type="submit" class="btn btn-outline-secondary">Submit Question</button>
+        </form>
+
+        <div id="answer"></div>
+    {% endif %}
+</div>
+
+<script>
+    document.getElementById('question-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const question = e.target.querySelector('[name="question"]').value;
+        const content = e.target.querySelector('[name="content"]').value;
+
+        fetch('/ask_question', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `question=${encodeURIComponent(question)}&content=${encodeURIComponent(content)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('answer').innerHTML = `<p><strong>Answer:</strong> ${data.answer}</p>`;
+        });
+    });
+</script>
+
+{% endblock upload %}
+
+<!-- </body>
+</html> -->

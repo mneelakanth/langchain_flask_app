@@ -1,0 +1,41 @@
+/* body {
+    display: 50%;
+}
+
+.upload {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload__card{
+    margin-top: 20px;
+    text-align: center;
+    justify-content:center;
+    align-items: center;
+    padding-bottom: 10px;
+} */
+
+body {
+    font-family: Arial, sans-serif;
+}
+.container {
+    width: 50%;
+    margin: 0 auto;
+    padding: 20px;
+    /* border: 1px solid #ccc; */
+    /* border-radius: 8px; */
+}
+input[type="file"], input[type="text"], button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+}
+.content {
+    margin-top: 20px;
+}
+#loading {
+    text-align: center;
+    font-size: 18px;
+    color: #007BFF;
+}
