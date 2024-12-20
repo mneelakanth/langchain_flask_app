@@ -13,7 +13,7 @@ env\scripts\activate
 pip install -r requirements.txt
 
 #### Run Flask app
-python main.py --modelname <modelname>
+python main.py --modelname <model_name>
 
 Modelname - 'huggingface' or 'genai'
 
