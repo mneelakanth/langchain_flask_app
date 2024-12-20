@@ -16,5 +16,7 @@ pip install -r requirements.txt
 python main.py
 
 
-https://github.com/user-attachments/assets/0da8b380-6851-4731-82f5-40f7b4cff3b7
+
+https://github.com/user-attachments/assets/002645b5-342d-4eb2-adaa-6d0edd50cef7
+
 
