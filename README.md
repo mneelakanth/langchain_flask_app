@@ -14,3 +14,7 @@ pip install -r requirements.txt
 
 #### Run Flask app
 python main.py
+
+
+https://github.com/user-attachments/assets/0da8b380-6851-4731-82f5-40f7b4cff3b7
+
