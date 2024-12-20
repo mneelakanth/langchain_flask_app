@@ -1,29 +1,46 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema import Document
+from langchain_community.vectorstores import FAISS
+from langchain.schema import Document
 
 from langchain_huggingface import  HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from transformers import pipeline, AutoTokenizer, AutoModelForQuestionAnswering, AutoModelForCausalLM
-from langchain.schema import Document
+
+from dotenv import load_dotenv
 
 from PyPDF2 import PdfReader
 from docx import Document as py_doc
+import os
+load_dotenv()
 
-def create_pipeline():
-    model_name = 'deepset/roberta-base-squad2' #"distilbert-base-uncased-distilled-squad" 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+os.environ['GOOGLE_API_KEY']
 
-    ## Creating the question-answering pipeline
-    qa_pipeline = pipeline("question-answering", model=model, tokenizer=tokenizer)
+def create_pipeline(modelname):
+    if modelname == 'huggingface':
+        model_name = 'deepset/roberta-base-squad2' #"distilbert-base-uncased-distilled-squad" 
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+        qa_pipeline = pipeline("question-answering", model=model, tokenizer=tokenizer)
+        return qa_pipeline
 
-    return qa_pipeline
+    if modelname == 'genai':
+        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+        return llm
+    
 
-def create_embeddings():
-    model_name = "sentence-transformers/all-mpnet-base-v2"  
-    embeddings = HuggingFaceEmbeddings(model_name=model_name)
-    return embeddings
+def create_embeddings(modelname):
+    if modelname == 'huggingface':
+        model_name = "sentence-transformers/all-mpnet-base-v2"  
+        embeddings = HuggingFaceEmbeddings(model_name=model_name)
+        return embeddings
+    if modelname == 'genai':
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        return embeddings
 
 def create_vector_db(docs, embeddings):
     db = FAISS.from_documents(docs, embeddings)
